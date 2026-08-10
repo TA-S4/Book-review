@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Review Details</title>
-    <!-- Fully Resizable & Persistent Workspace Update -->
+    <!-- Full Width Under-Cover Workspace Update -->
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             line-height: 1.6;
-            max-width: 1200px; /* Much wider container as requested */
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
             background-color: #f9f9f9;
@@ -30,13 +30,15 @@
             text-decoration: underline;
         }
         
+        /* Top Card Layout for Cover & Details */
         .detail-card {
             background: white;
             padding: 35px;
-            border-radius: 8px;
+            border-radius: 8px 8px 0 0; /* Rounded top corners only */
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             display: flex;
             gap: 30px;
+            border-bottom: 1px solid #f0f0f0;
         }
         .display-cover {
             width: 160px;
@@ -79,20 +81,30 @@
             border-radius: 6px;
             font-weight: 600;
             display: inline-block;
-            margin-bottom: 20px;
+            margin-bottom: 5px;
             align-self: flex-start;
         }
+
+        /* Lower Full-Width Notes Section Layout */
+        .notes-section-container {
+            background: white;
+            padding: 20px 35px 35px 35px;
+            border-radius: 0 0 8px 8px; /* Rounded bottom corners */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
+        }
         .notes-heading-area {
-            margin-top: 20px;
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             font-weight: bold;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
+            color: #222;
         }
         
-        /* Resizable input container styling */
+        /* Fully Resizable Input Box spanning the complete layout width */
         .permanent-notes-input {
             width: 100%;
-            min-height: 250px;
+            min-height: 300px;
             font-size: 1.1rem;
             line-height: 1.7;
             font-family: inherit;
@@ -104,7 +116,6 @@
             color: #222;
             transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
             
-            /* Allows free dragging horizontally and vertically */
             resize: both !important; 
             overflow: auto !important; 
         }
@@ -150,6 +161,7 @@
 
     <!-- VIEW DISPLAY -->
     <main id="view-section" style="display:none;">
+        <!-- Top Half: Metadata and Cover Area -->
         <article class="detail-card">
             <img id="viewCover" class="display-cover" src="" alt="Book Cover">
             <div class="display-info">
@@ -161,12 +173,15 @@
                     Pages: <span id="viewPages"></span>
                 </div>
                 <div id="viewTime" class="time-box"></div>
-                
-                <div class="notes-heading-area">My Notes & Thoughts:</div>
-                <textarea id="liveNotesInput" class="permanent-notes-input" placeholder="Type your thoughts and notes directly here... Everything is saved automatically!"></textarea>
-                <div id="saveStatus" class="saving-status"></div>
             </div>
         </article>
+
+        <!-- Bottom Half: Full-Width Writing Area underneath the cover -->
+        <section class="notes-section-container">
+            <div class="notes-heading-area">My Notes & Thoughts:</div>
+            <textarea id="liveNotesInput" class="permanent-notes-input" placeholder="Type your thoughts and notes directly here... Everything is saved automatically!"></textarea>
+            <div id="saveStatus" class="saving-status"></div>
+        </section>
     </main>
 
     <!-- CREATION FORM -->
@@ -271,13 +286,13 @@
             const notesInput = document.getElementById('liveNotesInput');
             notesInput.value = review.notes || "";
             
-            // Load saved custom sizes if they exist
+            // Reapply user custom sizes from localStorage
             const savedWidth = localStorage.getItem('review_box_width');
             const savedHeight = localStorage.getItem('review_box_height');
             if (savedWidth) notesInput.style.width = savedWidth;
             if (savedHeight) notesInput.style.height = savedHeight;
             
-            // Save size instantly when the user finishes dragging/resizing
+            // Listen for mouseup resize adjustments and save locally
             notesInput.addEventListener('mouseup', function() {
                 localStorage.setItem('review_box_width', this.style.width);
                 localStorage.setItem('review_box_height', this.style.height);
