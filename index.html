@@ -45,6 +45,18 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             position: relative;
         }
+        .book-type-tag {
+            display: inline-block;
+            background: #e2e8f0;
+            color: #475569;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
         .book-meta {
             color: #666;
             font-size: 0.95rem;
@@ -149,12 +161,13 @@
             margin-bottom: 5px;
             font-size: 0.9rem;
         }
-        .form-group input {
+        .form-group input, .form-group select {
             width: 100%;
             padding: 8px;
             box-sizing: border-box;
             border: 1px solid #ccc;
             border-radius: 4px;
+            background: white;
         }
         .date-row {
             display: flex;
@@ -195,23 +208,7 @@
     </header>
 
     <main id="reviews-list">
-        <!-- Initial Example Review -->
-        <article class="review-card" data-title="The Prince" data-author="Niccolò Machiavelli" data-rating="4" data-pages="140" data-start="2026-08-01" data-finish="2026-08-08">
-            <div class="menu-container">
-                <button class="three-dots-btn" onclick="toggleMenu(event)">⋮</button>
-                <div class="dropdown-menu">
-                    <button onclick="editCard(this)">Edit</button>
-                    <button class="delete-btn-text" onclick="deleteCard(this)">Delete</button>
-                </div>
-            </div>
-            <h2>The Prince</h2>
-            <div class="book-meta">
-                By Niccolò Machiavelli | 
-                <span class="rating">★★★★☆ (4 Stars)</span> | 
-                Pages: 140
-            </div>
-            <div class="reading-time">⏱️ Read in 7 days (Aug 1, 2026 – Aug 8, 2026)</div>
-        </article>
+        <!-- Reviews will be loaded dynamically from LocalStorage -->
     </main>
 
     <!-- POP-UP MODAL FORM -->
@@ -226,6 +223,19 @@
                 <div class="form-group">
                     <label for="bookAuthor">Author Name</label>
                     <input type="text" id="bookAuthor" required>
+                </div>
+                <div class="form-group">
+                    <label for="bookType">Book Type / Genre</label>
+                    <select id="bookType" required>
+                        <option value="Non-Fiction">Non-Fiction</option>
+                        <option value="Fiction">Fiction</option>
+                        <option value="History">History</option>
+                        <option value="Strategy / Politics">Strategy / Politics</option>
+                        <option value="Philosophy">Philosophy</option>
+                        <option value="Biography">Biography</option>
+                        <option value="Science / Tech">Science / Tech</option>
+                        <option value="Other">Other</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="bookRating">Rating (1 to 5 Stars)</label>
@@ -258,10 +268,78 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        let editingCard = null; // Keeps track of if we are editing or creating
+        let reviews = [];
+        let editingId = null;
+
+        // Starter default review if the user has no saved data
+        const initialDefaultReview = {
+            id: Date.now(),
+            title: "The Prince",
+            author: "Niccolò Machiavelli",
+            type: "Strategy / Politics",
+            rating: 4,
+            pages: 140,
+            start: "2026-08-01",
+            finish: "2026-08-08"
+        };
+
+        // Load reviews from browser LocalStorage when page opens
+        window.onload = function() {
+            const savedData = localStorage.getItem('my_book_reviews');
+            if (savedData) {
+                reviews = JSON.parse(savedData);
+            } else {
+                reviews = [initialDefaultReview];
+                saveToLocalStorage();
+            }
+            renderReviews();
+        };
+
+        function saveToLocalStorage() {
+            localStorage.setItem('my_book_reviews', JSON.stringify(reviews));
+        }
+
+        function renderReviews() {
+            const list = document.getElementById('reviews-list');
+            list.innerHTML = "";
+
+            reviews.forEach(review => {
+                const start = new Date(review.start);
+                const finish = new Date(review.finish);
+                const daysDiff = Math.ceil((finish - start) / (1000 * 3600 * 24));
+
+                let durationText = "";
+                if (daysDiff < 0) durationText = "Invalid dates";
+                else if (daysDiff === 0) durationText = "Read in 1 day";
+                else durationText = `Read in ${daysDiff} days`;
+
+                const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+
+                const cardHTML = `
+                    <article class="review-card">
+                        <div class="menu-container">
+                            <button class="three-dots-btn" onclick="toggleMenu(event)">⋮</button>
+                            <div class="dropdown-menu">
+                                <button onclick="editCard(${review.id})">Edit</button>
+                                <button class="delete-btn-text" onclick="deleteCard(${review.id})">Delete</button>
+                            </div>
+                        </div>
+                        <span class="book-type-tag">${review.type}</span>
+                        <h2>${review.title}</h2>
+                        <div class="book-meta">
+                            By ${review.author} | 
+                            <span class="rating">${stars} (${review.rating} Stars)</span> | 
+                            Pages: ${review.pages}
+                        </div>
+                        <div class="reading-time">⏱️ ${durationText} (${review.start} – ${review.finish})</div>
+                    </article>
+                `;
+                list.insertAdjacentHTML('afterbegin', cardHTML);
+            });
+        }
 
         function openModal() {
-            editingCard = null;
+            editingId = null;
             document.getElementById('modalTitle').innerText = "Add New Book Review";
             document.getElementById('reviewForm').reset();
             document.getElementById('modalOverlay').style.display = 'flex';
@@ -270,10 +348,9 @@
         function closeModal() {
             document.getElementById('modalOverlay').style.display = 'none';
             document.getElementById('reviewForm').reset();
-            editingCard = null;
+            editingId = null;
         }
 
-        // Dropdown menu toggle
         function toggleMenu(event) {
             event.stopPropagation();
             closeAllMenus();
@@ -287,102 +364,55 @@
             });
         }
 
-        // Close dropdown when clicking anywhere else
         window.onclick = function() {
             closeAllMenus();
         };
 
-        // Delete function
-        function deleteCard(button) {
-            const card = button.closest('.review-card');
-            card.remove();
+        function deleteCard(id) {
+            reviews = reviews.filter(r => r.id !== id);
+            saveToLocalStorage();
+            renderReviews();
         }
 
-        // Edit function
-        function editCard(button) {
-            editingCard = button.closest('.review-card');
+        function editCard(id) {
+            editingId = id;
+            const review = reviews.find(r => r.id === id);
 
-            // Pre-fill form values from data attributes
-            document.getElementById('bookTitle').value = editingCard.dataset.title;
-            document.getElementById('bookAuthor').value = editingCard.dataset.author;
-            document.getElementById('bookRating').value = editingCard.dataset.rating;
-            document.getElementById('pageNumber').value = editingCard.dataset.pages;
-            document.getElementById('startDate').value = editingCard.dataset.start;
-            document.getElementById('finishDate').value = editingCard.dataset.finish;
+            document.getElementById('bookTitle').value = review.title;
+            document.getElementById('bookAuthor').value = review.author;
+            document.getElementById('bookType').value = review.type;
+            document.getElementById('bookRating').value = review.rating;
+            document.getElementById('pageNumber').value = review.pages;
+            document.getElementById('startDate').value = review.start;
+            document.getElementById('finishDate').value = review.finish;
 
             document.getElementById('modalTitle').innerText = "Edit Book Review";
             document.getElementById('modalOverlay').style.display = 'flex';
         }
 
-        // Save Function (Handles both creation and edit)
         function saveReview(event) {
             event.preventDefault();
 
-            const title = document.getElementById('bookTitle').value;
-            const author = document.getElementById('bookAuthor').value;
-            const ratingNum = document.getElementById('bookRating').value;
-            const pages = document.getElementById('pageNumber').value;
-            const startStr = document.getElementById('startDate').value;
-            const finishStr = document.getElementById('finishDate').value;
+            const reviewData = {
+                id: editingId ? editingId : Date.now(),
+                title: document.getElementById('bookTitle').value,
+                author: document.getElementById('bookAuthor').value,
+                type: document.getElementById('bookType').value,
+                rating: parseInt(document.getElementById('bookRating').value),
+                pages: document.getElementById('pageNumber').value,
+                start: document.getElementById('startDate').value,
+                finish: document.getElementById('finishDate').value
+            };
 
-            // Calculate reading duration in days
-            const start = new Date(startStr);
-            const finish = new Date(finishStr);
-            const timeDiff = finish - start;
-            const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-
-            let durationText = "";
-            if (daysDiff < 0) {
-                durationText = "Invalid dates";
-            } else if (daysDiff === 0) {
-                durationText = "Read in 1 day";
+            if (editingId) {
+                const index = reviews.findIndex(r => r.id === editingId);
+                reviews[index] = reviewData;
             } else {
-                durationText = `Read in ${daysDiff} days`;
+                reviews.push(reviewData);
             }
 
-            const stars = '★'.repeat(ratingNum) + '☆'.repeat(5 - ratingNum);
-
-            const cardHTML = `
-                <div class="menu-container">
-                    <button class="three-dots-btn" onclick="toggleMenu(event)">⋮</button>
-                    <div class="dropdown-menu">
-                        <button onclick="editCard(this)">Edit</button>
-                        <button class="delete-btn-text" onclick="deleteCard(this)">Delete</button>
-                    </div>
-                </div>
-                <h2>${title}</h2>
-                <div class="book-meta">
-                    By ${author} | 
-                    <span class="rating">${stars} (${ratingNum} Stars)</span> | 
-                    Pages: ${pages}
-                </div>
-                <div class="reading-time">⏱️ ${durationText} (${startStr} – ${finishStr})</div>
-            `;
-
-            if (editingCard) {
-                // Update existing card
-                editingCard.dataset.title = title;
-                editingCard.dataset.author = author;
-                editingCard.dataset.rating = ratingNum;
-                editingCard.dataset.pages = pages;
-                editingCard.dataset.start = startStr;
-                editingCard.dataset.finish = finishStr;
-                editingCard.innerHTML = cardHTML;
-            } else {
-                // Create new card element
-                const newArticle = document.createElement('article');
-                newArticle.className = 'review-card';
-                newArticle.dataset.title = title;
-                newArticle.dataset.author = author;
-                newArticle.dataset.rating = ratingNum;
-                newArticle.dataset.pages = pages;
-                newArticle.dataset.start = startStr;
-                newArticle.dataset.finish = finishStr;
-                newArticle.innerHTML = cardHTML;
-
-                document.getElementById('reviews-list').prepend(newArticle);
-            }
-
+            saveToLocalStorage();
+            renderReviews();
             closeModal();
         }
     </script>
