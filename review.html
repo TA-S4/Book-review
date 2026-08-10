@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Review Details</title>
+    <!-- Live Textbox Update V2 -->
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -84,7 +85,6 @@
             margin-bottom: 10px;
         }
         
-        /* Permanent Notebook Input Style */
         .permanent-notes-input {
             width: 100%;
             font-size: 1.1rem;
@@ -114,7 +114,6 @@
             font-style: italic;
         }
 
-        /* Form view for brand new books only */
         .form-container {
             background: white;
             padding: 35px;
@@ -155,14 +154,13 @@
                 <div id="viewTime" class="time-box"></div>
                 
                 <div class="notes-heading-area">My Notes & Thoughts:</div>
-                <!-- This is the live textbox you can type into directly -->
                 <textarea id="liveNotesInput" class="permanent-notes-input" rows="10" placeholder="Type your thoughts and notes directly here... Everything is saved automatically!"></textarea>
                 <div id="saveStatus" class="saving-status"></div>
             </div>
         </article>
     </main>
 
-    <!-- CREATION FORM (Only used when adding a completely brand new book) -->
+    <!-- CREATION FORM -->
     <main id="form-section" style="display:none;">
         <div class="form-container">
             <h2>Add New Book Review</h2>
@@ -261,11 +259,9 @@
             document.getElementById('viewAuthor').innerText = review.author;
             document.getElementById('viewPages').innerText = review.pages;
             
-            // Put the notes inside our live active writing box
             const notesInput = document.getElementById('liveNotesInput');
             notesInput.value = review.notes || "";
             
-            // Attach the auto-saving mechanism when typing inside the box
             notesInput.addEventListener('input', autoSaveNotes);
             
             document.title = `${review.title} - Book Review`;
@@ -286,10 +282,8 @@
             statusDiv.innerText = "Typing...";
             statusDiv.style.color = "#666";
 
-            // Clear previous timeout so it doesn't save mid-keystroke constantly
             clearTimeout(saveTimeout);
 
-            // Save automatically 700 milliseconds after you stop typing
             saveTimeout = setTimeout(() => {
                 const newNotesText = document.getElementById('liveNotesInput').value;
                 const idx = reviews.findIndex(r => r.id === currentId);
