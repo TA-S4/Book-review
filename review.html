@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Review Details</title>
-    <!-- Blog-Style Auto-Expanding Workspace Update -->
+    <!-- Live Blog Seamless Update V3 -->
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -87,30 +87,41 @@
             padding-bottom: 8px;
         }
         
-        /* Blog/Notion Style Seamless Editor */
+        /* Forces the editor to be completely borderless and look like part of the page */
         .permanent-notes-input {
-            width: 100%;
-            font-size: 1.15rem;
-            line-height: 1.8;
-            font-family: inherit;
-            padding: 10px 0;
-            border: none;
-            border-radius: 0;
-            box-sizing: border-box;
-            resize: none; /* Prevents manual resizing corner */
-            overflow-y: hidden; /* Totally eliminates internal scrollbars */
+            width: 100% !important;
+            font-size: 1.15rem !important;
+            line-height: 1.8 !important;
+            font-family: inherit !important;
+            padding: 10px 0 !important;
+            
+            /* Absolute box killers */
+            border: none !important;
+            border-width: 0 !important;
+            border-radius: 0 !important;
+            outline: none !important;
+            box-shadow: none !important;
+            resize: none !important;
+            
+            overflow-y: hidden !important; /* Disables internal scrolling entirely */
             min-height: 200px;
-            background-color: transparent;
-            color: #222;
+            background-color: transparent !important;
+            color: #222 !important;
         }
-        .permanent-notes-input:focus {
-            outline: none;
-            /* Subtly highlights the writing block with no harsh boxes */
-            background-color: transparent;
+        
+        /* Disables any glowing lines or boxes when clicking inside to type */
+        .permanent-notes-input:focus, 
+        .permanent-notes-input:active, 
+        .permanent-notes-input:hover {
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            background-color: transparent !important;
         }
+
         .saving-status {
             font-size: 0.85rem;
-            color: #aa1111;
+            color: #666;
             margin-top: 15px;
             text-align: right;
             min-height: 20px;
@@ -157,8 +168,7 @@
                 <div id="viewTime" class="time-box"></div>
                 
                 <div class="notes-heading-area">My Notes & Thoughts:</div>
-                <!-- Seamless, borderless blog-like workspace -->
-                <textarea id="liveNotesInput" class="permanent-notes-input" placeholder="Start typing your blog post style review here... It will automatically expand as you type more text!"></textarea>
+                <textarea id="liveNotesInput" class="permanent-notes-input" placeholder="Start typing your review directly on the page..."></textarea>
                 <div id="saveStatus" class="saving-status"></div>
             </div>
         </article>
@@ -249,7 +259,6 @@
         };
 
         function adjustHeight(el) {
-            // Instantly recalculates and fits the element size to its scroll height
             el.style.height = 'auto';
             el.style.height = el.scrollHeight + 'px';
         }
@@ -272,10 +281,9 @@
             const notesInput = document.getElementById('liveNotesInput');
             notesInput.value = review.notes || "";
             
-            // Adjust height based on initial content loaded
-            setTimeout(() => { adjustHeight(notesInput); }, 50);
+            // Adjust on load
+            setTimeout(() => { adjustHeight(notesInput); }, 100);
             
-            // Monitor typing to auto-save AND auto-expand simultaneously
             notesInput.addEventListener('input', function() {
                 adjustHeight(this);
                 autoSaveNotes();
