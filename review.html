@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Details</title>
+    <title>Book Review details</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -14,9 +14,13 @@
             background-color: #f9f9f9;
             color: #333;
         }
-        .back-btn {
-            display: inline-block;
+        .header-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
+        }
+        .back-btn {
             color: #0070f3;
             text-decoration: none;
             font-weight: 600;
@@ -24,11 +28,38 @@
         .back-btn:hover {
             text-decoration: underline;
         }
+        .action-btn {
+            background-color: #0070f3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .action-btn:hover {
+            background-color: #0051a2;
+        }
+        
+        /* Display Card View */
         .detail-card {
             background: white;
             padding: 35px;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            gap: 30px;
+        }
+        .display-cover {
+            width: 160px;
+            height: 240px;
+            object-fit: cover;
+            border-radius: 6px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            background: #e2e8f0;
+        }
+        .display-info {
+            flex-grow: 1;
         }
         .book-type-tag {
             display: inline-block;
@@ -41,10 +72,7 @@
             text-transform: uppercase;
             margin-bottom: 15px;
         }
-        h1 {
-            margin-top: 0;
-            font-size: 2.2rem;
-        }
+        h1 { margin-top: 0; font-size: 2.2rem; }
         .meta-info {
             color: #666;
             font-size: 1.05rem;
@@ -52,10 +80,7 @@
             padding-bottom: 15px;
             margin-bottom: 25px;
         }
-        .rating {
-            color: #ffb400;
-            font-weight: bold;
-        }
+        .rating { color: #ffb400; font-weight: bold; }
         .notes-section {
             font-size: 1.1rem;
             white-space: pre-line;
@@ -71,69 +96,259 @@
             display: inline-block;
             margin-bottom: 20px;
         }
+
+        /* Form Layout View */
+        .form-container {
+            background: white;
+            padding: 35px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        .date-row { display: flex; gap: 15px; }
+        .date-row .form-group { flex: 1; }
+        
+        /* Image Upload Area Styles */
+        .image-preview-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-top: 5px;
+        }
+        .preview-img-element {
+            width: 80px;
+            height: 120px;
+            object-fit: cover;
+            border: 1px dashed #ccc;
+            border-radius: 4px;
+            background: #fdfdfd;
+        }
     </style>
 </head>
 <body>
 
-    <a href="index.html" class="back-btn">← Back to All Reviews</a>
+    <div class="header-nav">
+        <a href="index.html" class="back-btn">← Back to All Reviews</a>
+        <button id="topActionBtn" class="action-btn" style="display:none;"></button>
+    </div>
 
-    <main id="review-container">
-        <p>Loading review details...</p>
+    <!-- VIEW VIEWPORT -->
+    <main id="view-section" style="display:none;">
+        <article class="detail-card">
+            <img id="viewCover" class="display-cover" src="" alt="Book Cover">
+            <div class="display-info">
+                <span id="viewType" class="book-type-tag"></span>
+                <h1 id="viewTitle"></h1>
+                <div class="meta-info">
+                    By <strong id="viewAuthor"></strong> | 
+                    <span id="viewRating" class="rating"></span> | 
+                    Pages: <span id="viewPages"></span>
+                </div>
+                <div id="viewTime" class="time-box"></div>
+                <h3>My Notes & Thoughts:</h3>
+                <div id="viewNotes" class="notes-section"></div>
+            </div>
+        </article>
+    </main>
+
+    <!-- FORM VIEWPORT -->
+    <main id="form-section" style="display:none;">
+        <div class="form-container">
+            <h2 id="formHeaderTitle">Write Book Review</h2>
+            <form id="reviewForm" onsubmit="handleFormSubmit(event)">
+                <div class="form-group">
+                    <label for="bookTitle">Book Name</label>
+                    <input type="text" id="bookTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="bookAuthor">Author Name</label>
+                    <input type="text" id="bookAuthor" required>
+                </div>
+                <div class="form-group">
+                    <label for="bookType">Book Type / Genre</label>
+                    <select id="bookType" required>
+                        <option value="Non-Fiction">Non-Fiction</option>
+                        <option value="Fiction">Fiction</option>
+                        <option value="History">History</option>
+                        <option value="Strategy / Politics">Strategy / Politics</option>
+                        <option value="Philosophy">Philosophy</option>
+                        <option value="Biography">Biography</option>
+                        <option value="Science / Tech">Science / Tech</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="bookRating">Rating (1 to 5 Stars)</label>
+                    <input type="number" id="bookRating" min="1" max="5" required>
+                </div>
+                <div class="form-group">
+                    <label for="pageNumber">Page Count</label>
+                    <input type="number" id="pageNumber" required>
+                </div>
+                <div class="date-row">
+                    <div class="form-group">
+                        <label for="startDate">Start Date</label>
+                        <input type="date" id="startDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="finishDate">Finish Date</label>
+                        <input type="date" id="finishDate" required>
+                    </div>
+                </div>
+                
+                <!-- Photo Upload Field -->
+                <div class="form-group">
+                    <label for="bookCoverInput">Upload Book Photo Cover</label>
+                    <div class="image-preview-container">
+                        <input type="file" id="bookCoverInput" accept="image/*" onchange="previewImage(this)">
+                        <img id="formImagePreview" class="preview-img-element" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='120'><rect width='100%'' height='100%' fill='%23f8fafc'/></svg>" alt="Preview">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="bookReviewText">Detailed Review / Notes</label>
+                    <textarea id="bookReviewText" rows="6" placeholder="Write your thoughts..."></textarea>
+                </div>
+
+                <button type="submit" class="action-btn" style="width: 100%; padding: 12px;">Save Review Details</button>
+            </form>
+        </div>
     </main>
 
     <script>
+        let currentId = null;
+        let reviews = [];
+        let base64CoverString = ""; 
+
         window.onload = function() {
-            // Read the book ID from URL parameter (e.g., ?id=123456)
             const urlParams = new URLSearchParams(window.location.search);
-            const bookId = parseInt(urlParams.get('id'));
+            const idParam = urlParams.get('id');
 
-            // Load saved data
             const savedData = localStorage.getItem('my_book_reviews');
-            if (!savedData) {
-                document.getElementById('review-container').innerHTML = "<h2>Review not found.</h2>";
-                return;
+            if (savedData) {
+                reviews = JSON.parse(savedData);
             }
 
-            const reviews = JSON.parse(savedData);
-            const review = reviews.find(r => r.id === bookId);
+            if (idParam === 'new') {
+                currentId = 'new';
+                showFormView();
+            } else {
+                currentId = parseInt(idParam);
+                showDisplayView();
+            }
+        };
 
+        function showDisplayView() {
+            const review = reviews.find(r => r.id === currentId);
             if (!review) {
-                document.getElementById('review-container').innerHTML = "<h2>Review not found.</h2>";
+                document.body.innerHTML = `<div style="text-align:center; padding:50px;"><h2>Review not found.</h2><a href="index.html">Back Home</a></div>`;
                 return;
             }
 
-            // Calculate reading days
+            document.getElementById('form-section').style.display = 'none';
+            document.getElementById('view-section').style.display = 'block';
+
+            const topBtn = document.getElementById('topActionBtn');
+            topBtn.style.display = 'block';
+            topBtn.innerText = "✏️ Edit Review";
+            topBtn.onclick = function() { showFormView(review); };
+
+            document.getElementById('viewType').innerText = review.type;
+            document.getElementById('viewTitle').innerText = review.title;
+            document.getElementById('viewAuthor').innerText = review.author;
+            document.getElementById('viewPages').innerText = review.pages;
+            document.getElementById('viewNotes').innerText = review.notes || "No custom thoughts typed yet.";
+            document.title = `${review.title} - Book Review`;
+
             const start = new Date(review.start);
             const finish = new Date(review.finish);
             const daysDiff = Math.ceil((finish - start) / (1000 * 3600 * 24));
+            document.getElementById('viewTime').innerText = `⏱️ ${daysDiff === 0 ? "Read in 1 day" : `Read in ${daysDiff} days`} (${review.start} – ${review.finish})`;
+
+            document.getElementById('viewRating').innerText = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating) + ` (${review.rating}/5)`;
             
-            let durationText = "";
-            if (daysDiff < 0) durationText = "Invalid dates";
-            else if (daysDiff === 0) durationText = "Read in 1 day";
-            else durationText = `Read in ${daysDiff} days`;
+            const defaultSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="240"><rect width="100%" height="100%" fill="%23cbd5e1"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" fill="%2364748b">No Image</text></svg>';
+            document.getElementById('viewCover').src = review.cover ? review.cover : defaultSvg;
+        }
 
-            const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+        function showFormView(editData = null) {
+            document.getElementById('view-section').style.display = 'none';
+            document.getElementById('form-section').style.display = 'block';
+            document.getElementById('topActionBtn').style.display = 'none';
 
-            // Update page Title tag
-            document.title = `${review.title} - Book Review`;
+            if (editData) {
+                document.getElementById('formHeaderTitle').innerText = "Edit Review Properties";
+                document.getElementById('bookTitle').value = editData.title;
+                document.getElementById('bookAuthor').value = editData.author;
+                document.getElementById('bookType').value = editData.type;
+                document.getElementById('bookRating').value = editData.rating;
+                document.getElementById('pageNumber').value = editData.pages;
+                document.getElementById('startDate').value = editData.start;
+                document.getElementById('finishDate').value = editData.finish;
+                document.getElementById('bookReviewText').value = editData.notes || "";
+                base64CoverString = editData.cover || "";
+                if(base64CoverString) document.getElementById('formImagePreview').src = base64CoverString;
+            } else {
+                document.getElementById('formHeaderTitle').innerText = "Write New Book Review";
+                document.getElementById('reviewForm').reset();
+                base64CoverString = "";
+                document.getElementById('formImagePreview').src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='120'><rect width='100%'' height='100%' fill='%23f8fafc'/></svg>";
+            }
+        }
 
-            // Display review content
-            document.getElementById('review-container').innerHTML = `
-                <article class="detail-card">
-                    <span class="book-type-tag">${review.type}</span>
-                    <h1>${review.title}</h1>
-                    <div class="meta-info">
-                        By <strong>${review.author}</strong> | 
-                        <span class="rating">${stars} (${review.rating}/5 Stars)</span> | 
-                        Pages: ${review.pages}
-                    </div>
-                    <div class="time-box">⏱️ ${durationText} (${review.start} – ${review.finish})</div>
-                    <h3>My Notes & Thoughts:</h3>
-                    <div class="notes-section">${review.notes ? review.notes : "No detailed notes written for this book."}</div>
-                </article>
-            `;
-        };
+        function previewImage(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    base64CoverString = e.target.result;
+                    document.getElementById('formImagePreview').src = base64CoverString;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const targetId = currentId === 'new' ? Date.now() : currentId;
+            const reviewObject = {
+                id: targetId,
+                title: document.getElementById('bookTitle').value,
+                author: document.getElementById('bookAuthor').value,
+                type: document.getElementById('bookType').value,
+                rating: parseInt(document.getElementById('bookRating').value),
+                pages: document.getElementById('pageNumber').value,
+                start: document.getElementById('startDate').value,
+                finish: document.getElementById('finishDate').value,
+                notes: document.getElementById('bookReviewText').value,
+                cover: base64CoverString
+            };
+
+            if (currentId === 'new') {
+                reviews.push(reviewObject);
+            } else {
+                const idx = reviews.findIndex(r => r.id === currentId);
+                reviews[idx] = reviewObject;
+            }
+
+            localStorage.setItem('my_book_reviews', JSON.stringify(reviews));
+            window.location.href = `review.html?id=${targetId}`;
+        }
     </script>
-
 </body>
 </html>
