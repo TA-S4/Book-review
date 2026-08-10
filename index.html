@@ -36,13 +36,14 @@
             background-color: #0051a2;
         }
 
-        /* Review Cards Container */
+        /* Review Card Layout */
         .review-card {
             background: white;
             padding: 25px;
             margin: 20px 0;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            position: relative;
         }
         .book-meta {
             color: #666;
@@ -53,10 +54,69 @@
             color: #ffb400;
             font-weight: bold;
         }
+        .reading-time {
+            display: inline-block;
+            background: #eef6ff;
+            color: #0070f3;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        /* Three Dot Menu */
+        .menu-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .three-dots-btn {
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+            color: #888;
+            padding: 0 5px;
+            border-radius: 4px;
+        }
+        .three-dots-btn:hover {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 30px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 10;
+            min-width: 110px;
+            overflow: hidden;
+        }
+        .dropdown-menu button {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            text-align: left;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .dropdown-menu button:hover {
+            background-color: #f5f5f5;
+        }
+        .dropdown-menu .delete-btn-text {
+            color: #e53935;
+        }
 
         /* Pop-up Modal Styles */
         .modal-overlay {
-            display: none; /* Hidden by default */
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
@@ -72,19 +132,22 @@
             padding: 30px;
             border-radius: 8px;
             width: 90%;
-            max-width: 400px;
+            max-width: 420px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            max-height: 90vh;
+            overflow-y: auto;
         }
         .modal h2 {
             margin-top: 0;
         }
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         .form-group label {
             display: block;
             font-weight: bold;
             margin-bottom: 5px;
+            font-size: 0.9rem;
         }
         .form-group input {
             width: 100%;
@@ -92,6 +155,13 @@
             box-sizing: border-box;
             border: 1px solid #ccc;
             border-radius: 4px;
+        }
+        .date-row {
+            display: flex;
+            gap: 10px;
+        }
+        .date-row .form-group {
+            flex: 1;
         }
         .modal-buttons {
             display: flex;
@@ -126,21 +196,28 @@
 
     <main id="reviews-list">
         <!-- Initial Example Review -->
-        <article class="review-card">
+        <article class="review-card" data-title="The Prince" data-author="Niccolò Machiavelli" data-rating="4" data-pages="140" data-start="2026-08-01" data-finish="2026-08-08">
+            <div class="menu-container">
+                <button class="three-dots-btn" onclick="toggleMenu(event)">⋮</button>
+                <div class="dropdown-menu">
+                    <button onclick="editCard(this)">Edit</button>
+                    <button class="delete-btn-text" onclick="deleteCard(this)">Delete</button>
+                </div>
+            </div>
             <h2>The Prince</h2>
             <div class="book-meta">
                 By Niccolò Machiavelli | 
                 <span class="rating">★★★★☆ (4 Stars)</span> | 
                 Pages: 140
             </div>
-            <p>A classic work on political strategy and leadership.</p>
+            <div class="reading-time">⏱️ Read in 7 days (Aug 1, 2026 – Aug 8, 2026)</div>
         </article>
     </main>
 
     <!-- POP-UP MODAL FORM -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
-            <h2>Add New Book Review</h2>
+            <h2 id="modalTitle">Add New Book Review</h2>
             <form id="reviewForm" onsubmit="saveReview(event)">
                 <div class="form-group">
                     <label for="bookTitle">Book Name</label>
@@ -158,9 +235,22 @@
                     <label for="pageNumber">Page Count</label>
                     <input type="number" id="pageNumber" placeholder="e.g. 250" required>
                 </div>
+
+                <!-- Date Inputs -->
+                <div class="date-row">
+                    <div class="form-group">
+                        <label for="startDate">Start Date</label>
+                        <input type="date" id="startDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="finishDate">Finish Date</label>
+                        <input type="date" id="finishDate" required>
+                    </div>
+                </div>
+
                 <div class="modal-buttons">
                     <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="save-btn">Add Review</button>
+                    <button type="submit" class="save-btn">Save Review</button>
                 </div>
             </form>
         </div>
@@ -168,44 +258,131 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
+        let editingCard = null; // Keeps track of if we are editing or creating
+
         function openModal() {
+            editingCard = null;
+            document.getElementById('modalTitle').innerText = "Add New Book Review";
+            document.getElementById('reviewForm').reset();
             document.getElementById('modalOverlay').style.display = 'flex';
         }
 
         function closeModal() {
             document.getElementById('modalOverlay').style.display = 'none';
             document.getElementById('reviewForm').reset();
+            editingCard = null;
         }
 
-        function saveReview(event) {
-            event.preventDefault(); // Stop the page from refreshing
+        // Dropdown menu toggle
+        function toggleMenu(event) {
+            event.stopPropagation();
+            closeAllMenus();
+            const dropdown = event.target.nextElementSibling;
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
 
-            // Get values from the input fields
+        function closeAllMenus() {
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                menu.style.display = 'none';
+            });
+        }
+
+        // Close dropdown when clicking anywhere else
+        window.onclick = function() {
+            closeAllMenus();
+        };
+
+        // Delete function
+        function deleteCard(button) {
+            const card = button.closest('.review-card');
+            card.remove();
+        }
+
+        // Edit function
+        function editCard(button) {
+            editingCard = button.closest('.review-card');
+
+            // Pre-fill form values from data attributes
+            document.getElementById('bookTitle').value = editingCard.dataset.title;
+            document.getElementById('bookAuthor').value = editingCard.dataset.author;
+            document.getElementById('bookRating').value = editingCard.dataset.rating;
+            document.getElementById('pageNumber').value = editingCard.dataset.pages;
+            document.getElementById('startDate').value = editingCard.dataset.start;
+            document.getElementById('finishDate').value = editingCard.dataset.finish;
+
+            document.getElementById('modalTitle').innerText = "Edit Book Review";
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+
+        // Save Function (Handles both creation and edit)
+        function saveReview(event) {
+            event.preventDefault();
+
             const title = document.getElementById('bookTitle').value;
             const author = document.getElementById('bookAuthor').value;
             const ratingNum = document.getElementById('bookRating').value;
             const pages = document.getElementById('pageNumber').value;
+            const startStr = document.getElementById('startDate').value;
+            const finishStr = document.getElementById('finishDate').value;
 
-            // Convert number rating to star symbols
+            // Calculate reading duration in days
+            const start = new Date(startStr);
+            const finish = new Date(finishStr);
+            const timeDiff = finish - start;
+            const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+            let durationText = "";
+            if (daysDiff < 0) {
+                durationText = "Invalid dates";
+            } else if (daysDiff === 0) {
+                durationText = "Read in 1 day";
+            } else {
+                durationText = `Read in ${daysDiff} days`;
+            }
+
             const stars = '★'.repeat(ratingNum) + '☆'.repeat(5 - ratingNum);
 
-            // Create a new card HTML
-            const newCardHTML = `
-                <article class="review-card">
-                    <h2>${title}</h2>
-                    <div class="book-meta">
-                        By ${author} | 
-                        <span class="rating">${stars} (${ratingNum} Stars)</span> | 
-                        Pages: ${pages}
+            const cardHTML = `
+                <div class="menu-container">
+                    <button class="three-dots-btn" onclick="toggleMenu(event)">⋮</button>
+                    <div class="dropdown-menu">
+                        <button onclick="editCard(this)">Edit</button>
+                        <button class="delete-btn-text" onclick="deleteCard(this)">Delete</button>
                     </div>
-                </article>
+                </div>
+                <h2>${title}</h2>
+                <div class="book-meta">
+                    By ${author} | 
+                    <span class="rating">${stars} (${ratingNum} Stars)</span> | 
+                    Pages: ${pages}
+                </div>
+                <div class="reading-time">⏱️ ${durationText} (${startStr} – ${finishStr})</div>
             `;
 
-            // Insert the new card at the top of the list
-            const reviewsList = document.getElementById('reviews-list');
-            reviewsList.insertAdjacentHTML('afterbegin', newCardHTML);
+            if (editingCard) {
+                // Update existing card
+                editingCard.dataset.title = title;
+                editingCard.dataset.author = author;
+                editingCard.dataset.rating = ratingNum;
+                editingCard.dataset.pages = pages;
+                editingCard.dataset.start = startStr;
+                editingCard.dataset.finish = finishStr;
+                editingCard.innerHTML = cardHTML;
+            } else {
+                // Create new card element
+                const newArticle = document.createElement('article');
+                newArticle.className = 'review-card';
+                newArticle.dataset.title = title;
+                newArticle.dataset.author = author;
+                newArticle.dataset.rating = ratingNum;
+                newArticle.dataset.pages = pages;
+                newArticle.dataset.start = startStr;
+                newArticle.dataset.finish = finishStr;
+                newArticle.innerHTML = cardHTML;
 
-            // Close pop-up and clear form
+                document.getElementById('reviews-list').prepend(newArticle);
+            }
+
             closeModal();
         }
     </script>
