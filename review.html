@@ -28,35 +28,6 @@
         .back-btn:hover {
             text-decoration: underline;
         }
-        .action-btn {
-            background-color: #0070f3;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .action-btn:hover {
-            background-color: #0051a2;
-        }
-        .save-notes-btn {
-            background-color: #2ea44f;
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            font-size: 0.9rem;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 10px;
-            font-weight: 600;
-        }
-        .save-notes-btn:hover {
-            background-color: #22863a;
-        }
         
         .detail-card {
             background: white;
@@ -112,26 +83,35 @@
             font-weight: bold;
             margin-bottom: 10px;
         }
-        .notes-container {
-            min-height: 100px;
-        }
-        .notes-section {
-            font-size: 1.1rem;
-            white-space: pre-line;
-            line-height: 1.8;
-            color: #222;
-            padding: 5px 0;
-        }
-        .edit-notes-textarea {
+        
+        /* Permanent Notebook Input Style */
+        .permanent-notes-input {
             width: 100%;
             font-size: 1.1rem;
-            line-height: 1.6;
+            line-height: 1.7;
             font-family: inherit;
-            padding: 10px;
-            border: 1px solid #0070f3;
-            border-radius: 6px;
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
             box-sizing: border-box;
             resize: vertical;
+            background-color: #fafafa;
+            color: #222;
+            transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+        }
+        .permanent-notes-input:focus {
+            outline: none;
+            border-color: #0070f3;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.1);
+        }
+        .saving-status {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+            text-align: right;
+            min-height: 20px;
+            font-style: italic;
         }
 
         /* Form view for brand new books only */
@@ -150,13 +130,14 @@
         .date-row .form-group { flex: 1; }
         .image-preview-container { display: flex; align-items: center; gap: 20px; margin-top: 5px; }
         .preview-img-element { width: 80px; height: 120px; object-fit: cover; border: 1px dashed #ccc; border-radius: 4px; background: #fdfdfd; }
+        .action-btn { background-color: #0070f3; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .action-btn:hover { background-color: #0051a2; }
     </style>
 </head>
 <body>
 
     <div class="header-nav">
         <a href="index.html" class="back-btn">← Back to All Reviews</a>
-        <button id="editReviewBtn" class="action-btn" style="display:none;">✏️ Edit Review</button>
     </div>
 
     <!-- VIEW DISPLAY -->
@@ -174,9 +155,9 @@
                 <div id="viewTime" class="time-box"></div>
                 
                 <div class="notes-heading-area">My Notes & Thoughts:</div>
-                <div class="notes-container" id="notesContainer">
-                    <div id="viewNotes" class="notes-section"></div>
-                </div>
+                <!-- This is the live textbox you can type into directly -->
+                <textarea id="liveNotesInput" class="permanent-notes-input" rows="10" placeholder="Type your thoughts and notes directly here... Everything is saved automatically!"></textarea>
+                <div id="saveStatus" class="saving-status"></div>
             </div>
         </article>
     </main>
@@ -234,7 +215,7 @@
                 </div>
                 <div class="form-group">
                     <label for="bookReviewText">Detailed Review / Notes</label>
-                    <textarea id="bookReviewText" rows="6" placeholder="Write your thoughts..."></textarea>
+                    <textarea id="bookReviewText" rows="6" placeholder="Write your initial thoughts..."></textarea>
                 </div>
                 <button type="submit" class="action-btn" style="width: 100%; padding: 12px; justify-content: center;">Save Review Details</button>
             </form>
@@ -245,7 +226,7 @@
         let currentId = null;
         let reviews = [];
         let base64CoverString = ""; 
-        let isEditingNotes = false;
+        let saveTimeout = null;
 
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -275,16 +256,17 @@
             document.getElementById('form-section').style.display = 'none';
             document.getElementById('view-section').style.display = 'block';
 
-            const editBtn = document.getElementById('editReviewBtn');
-            editBtn.style.display = 'block';
-            editBtn.onclick = toggleInlineNotesEdit;
-
             document.getElementById('viewType').innerText = review.type;
             document.getElementById('viewTitle').innerText = review.title;
             document.getElementById('viewAuthor').innerText = review.author;
             document.getElementById('viewPages').innerText = review.pages;
             
-            renderNotesArea(review.notes);
+            // Put the notes inside our live active writing box
+            const notesInput = document.getElementById('liveNotesInput');
+            notesInput.value = review.notes || "";
+            
+            // Attach the auto-saving mechanism when typing inside the box
+            notesInput.addEventListener('input', autoSaveNotes);
             
             document.title = `${review.title} - Book Review`;
 
@@ -299,53 +281,26 @@
             document.getElementById('viewCover').src = review.cover ? review.cover : defaultSvg;
         }
 
-        function renderNotesArea(notesText) {
-            const container = document.getElementById('notesContainer');
-            if (notesText && notesText.trim() !== "") {
-                container.innerHTML = `<div id="viewNotes" class="notes-section">${notesText}</div>`;
-            } else {
-                container.innerHTML = `<div id="viewNotes" class="notes-section" style="color: #888; font-style: italic;">No custom thoughts typed yet. Click 'Edit Review' above to add notes.</div>`;
-            }
-        }
+        function autoSaveNotes() {
+            const statusDiv = document.getElementById('saveStatus');
+            statusDiv.innerText = "Typing...";
+            statusDiv.style.color = "#666";
 
-        function toggleInlineNotesEdit() {
-            const review = reviews.find(r => r.id === currentId);
-            const container = document.getElementById('notesContainer');
-            const editBtn = document.getElementById('editReviewBtn');
+            // Clear previous timeout so it doesn't save mid-keystroke constantly
+            clearTimeout(saveTimeout);
 
-            if (!isEditingNotes) {
-                // Switch to Edit Mode in place
-                isEditingNotes = true;
-                editBtn.innerText = "❌ Cancel Edit";
+            // Save automatically 700 milliseconds after you stop typing
+            saveTimeout = setTimeout(() => {
+                const newNotesText = document.getElementById('liveNotesInput').value;
+                const idx = reviews.findIndex(r => r.id === currentId);
                 
-                const currentText = review.notes || "";
-                container.innerHTML = `
-                    <textarea id="inlineNotesTextarea" class="edit-notes-textarea" rows="8">${currentText}</textarea>
-                    <button class="save-notes-btn" onclick="saveInlineNotes()">💾 Save Notes</button>
-                `;
-                document.getElementById('inlineNotesTextarea').focus();
-            } else {
-                // Cancel and return to normal view
-                isEditingNotes = false;
-                editBtn.innerText = "✏️ Edit Review";
-                renderNotesArea(review.notes);
-            }
-        }
-
-        function saveInlineNotes() {
-            const newNotesText = document.getElementById('inlineNotesTextarea').value;
-            const idx = reviews.findIndex(r => r.id === currentId);
-            
-            // Update the object inside our reviews array
-            reviews[idx].notes = newNotesText;
-            
-            // Save to localStorage
-            localStorage.setItem('my_book_reviews', JSON.stringify(reviews));
-            
-            // Turn off edit mode and re-render
-            isEditingNotes = false;
-            document.getElementById('editReviewBtn').innerText = "✏️ Edit Review";
-            renderNotesArea(newNotesText);
+                if (idx !== -1) {
+                    reviews[idx].notes = newNotesText;
+                    localStorage.setItem('my_book_reviews', JSON.stringify(reviews));
+                    statusDiv.innerText = "✓ Saved automatically";
+                    statusDiv.style.color = "#2ea44f";
+                }
+            }, 700);
         }
 
         function previewImage(input) {
