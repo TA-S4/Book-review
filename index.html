@@ -20,7 +20,6 @@
             border-bottom: 2px solid #eaeaea;
         }
         
-        /* Add Review Button */
         .add-btn {
             background-color: #0070f3;
             color: white;
@@ -44,6 +43,12 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             position: relative;
+            cursor: pointer; /* Indicates card is clickable */
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .review-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         .book-type-tag {
             display: inline-block;
@@ -82,6 +87,7 @@
             position: absolute;
             top: 20px;
             right: 20px;
+            z-index: 5;
         }
         .three-dots-btn {
             background: none;
@@ -126,7 +132,7 @@
             color: #e53935;
         }
 
-        /* Pop-up Modal Styles */
+        /* Modal Styles */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -149,33 +155,25 @@
             max-height: 90vh;
             overflow-y: auto;
         }
-        .modal h2 {
-            margin-top: 0;
-        }
-        .form-group {
-            margin-bottom: 12px;
-        }
+        .modal h2 { margin-top: 0; }
+        .form-group { margin-bottom: 12px; }
         .form-group label {
             display: block;
             font-weight: bold;
             margin-bottom: 5px;
             font-size: 0.9rem;
         }
-        .form-group input, .form-group select {
+        .form-group input, .form-group select, .form-group textarea {
             width: 100%;
             padding: 8px;
             box-sizing: border-box;
             border: 1px solid #ccc;
             border-radius: 4px;
             background: white;
+            font-family: inherit;
         }
-        .date-row {
-            display: flex;
-            gap: 10px;
-        }
-        .date-row .form-group {
-            flex: 1;
-        }
+        .date-row { display: flex; gap: 10px; }
+        .date-row .form-group { flex: 1; }
         .modal-buttons {
             display: flex;
             justify-content: flex-end;
@@ -207,9 +205,7 @@
         <button class="add-btn" onclick="openModal()">+ Add New Review</button>
     </header>
 
-    <main id="reviews-list">
-        <!-- Reviews will be loaded dynamically from LocalStorage -->
-    </main>
+    <main id="reviews-list"></main>
 
     <!-- POP-UP MODAL FORM -->
     <div class="modal-overlay" id="modalOverlay">
@@ -245,8 +241,6 @@
                     <label for="pageNumber">Page Count</label>
                     <input type="number" id="pageNumber" placeholder="e.g. 250" required>
                 </div>
-
-                <!-- Date Inputs -->
                 <div class="date-row">
                     <div class="form-group">
                         <label for="startDate">Start Date</label>
@@ -257,6 +251,10 @@
                         <input type="date" id="finishDate" required>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label for="bookReviewText">Detailed Review / Notes</label>
+                    <textarea id="bookReviewText" rows="4" placeholder="Write your thoughts about this book..."></textarea>
+                </div>
 
                 <div class="modal-buttons">
                     <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
@@ -266,24 +264,22 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
     <script>
         let reviews = [];
         let editingId = null;
 
-        // Starter default review if the user has no saved data
         const initialDefaultReview = {
-            id: Date.now(),
+            id: 1700000000000,
             title: "The Prince",
             author: "Niccolò Machiavelli",
             type: "Strategy / Politics",
             rating: 4,
             pages: 140,
             start: "2026-08-01",
-            finish: "2026-08-08"
+            finish: "2026-08-08",
+            notes: "A classic work on political strategy and leadership. Explores statecraft, military power, and the pragmatic realities of ruling."
         };
 
-        // Load reviews from browser LocalStorage when page opens
         window.onload = function() {
             const savedData = localStorage.getItem('my_book_reviews');
             if (savedData) {
@@ -316,12 +312,12 @@
                 const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
 
                 const cardHTML = `
-                    <article class="review-card">
+                    <article class="review-card" onclick="goToReview(${review.id})">
                         <div class="menu-container">
                             <button class="three-dots-btn" onclick="toggleMenu(event)">⋮</button>
                             <div class="dropdown-menu">
-                                <button onclick="editCard(${review.id})">Edit</button>
-                                <button class="delete-btn-text" onclick="deleteCard(${review.id})">Delete</button>
+                                <button onclick="editCard(event, ${review.id})">Edit</button>
+                                <button class="delete-btn-text" onclick="deleteCard(event, ${review.id})">Delete</button>
                             </div>
                         </div>
                         <span class="book-type-tag">${review.type}</span>
@@ -338,6 +334,10 @@
             });
         }
 
+        function goToReview(id) {
+            window.location.href = `review.html?id=${id}`;
+        }
+
         function openModal() {
             editingId = null;
             document.getElementById('modalTitle').innerText = "Add New Book Review";
@@ -352,7 +352,7 @@
         }
 
         function toggleMenu(event) {
-            event.stopPropagation();
+            event.stopPropagation(); // Prevents navigating to the detail page
             closeAllMenus();
             const dropdown = event.target.nextElementSibling;
             dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
@@ -368,13 +368,15 @@
             closeAllMenus();
         };
 
-        function deleteCard(id) {
+        function deleteCard(event, id) {
+            event.stopPropagation();
             reviews = reviews.filter(r => r.id !== id);
             saveToLocalStorage();
             renderReviews();
         }
 
-        function editCard(id) {
+        function editCard(event, id) {
+            event.stopPropagation();
             editingId = id;
             const review = reviews.find(r => r.id === id);
 
@@ -385,6 +387,7 @@
             document.getElementById('pageNumber').value = review.pages;
             document.getElementById('startDate').value = review.start;
             document.getElementById('finishDate').value = review.finish;
+            document.getElementById('bookReviewText').value = review.notes || "";
 
             document.getElementById('modalTitle').innerText = "Edit Book Review";
             document.getElementById('modalOverlay').style.display = 'flex';
@@ -401,7 +404,8 @@
                 rating: parseInt(document.getElementById('bookRating').value),
                 pages: document.getElementById('pageNumber').value,
                 start: document.getElementById('startDate').value,
-                finish: document.getElementById('finishDate').value
+                finish: document.getElementById('finishDate').value,
+                notes: document.getElementById('bookReviewText').value
             };
 
             if (editingId) {
@@ -416,6 +420,5 @@
             closeModal();
         }
     </script>
-
 </body>
 </html>
