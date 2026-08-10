@@ -43,7 +43,7 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             position: relative;
-            cursor: pointer; /* Indicates card is clickable */
+            cursor: pointer;
             transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
         .review-card:hover {
@@ -352,7 +352,7 @@
         }
 
         function toggleMenu(event) {
-            event.stopPropagation(); // Prevents navigating to the detail page
+            event.stopPropagation();
             closeAllMenus();
             const dropdown = event.target.nextElementSibling;
             dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
