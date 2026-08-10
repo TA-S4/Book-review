@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Review Details</title>
-    <!-- Live Blog Seamless Update V3 -->
+    <!-- Fully Resizable & Persistent Workspace Update -->
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             line-height: 1.6;
-            max-width: 800px;
+            max-width: 1200px; /* Much wider container as requested */
             margin: 0 auto;
             padding: 20px;
             background-color: #f9f9f9;
@@ -48,6 +48,8 @@
         }
         .display-info {
             flex-grow: 1;
+            display: flex;
+            flex-direction: column;
         }
         .book-type-tag {
             display: inline-block;
@@ -59,6 +61,7 @@
             font-weight: bold;
             text-transform: uppercase;
             margin-bottom: 15px;
+            align-self: flex-start;
         }
         h1 { margin-top: 0; font-size: 2.2rem; }
         .meta-info {
@@ -77,52 +80,44 @@
             font-weight: 600;
             display: inline-block;
             margin-bottom: 20px;
+            align-self: flex-start;
         }
         .notes-heading-area {
-            margin-top: 30px;
-            font-size: 1.4rem;
+            margin-top: 20px;
+            font-size: 1.3rem;
             font-weight: bold;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 8px;
+            margin-bottom: 12px;
         }
         
-        /* Forces the editor to be completely borderless and look like part of the page */
+        /* Resizable input container styling */
         .permanent-notes-input {
-            width: 100% !important;
-            font-size: 1.15rem !important;
-            line-height: 1.8 !important;
-            font-family: inherit !important;
-            padding: 10px 0 !important;
+            width: 100%;
+            min-height: 250px;
+            font-size: 1.1rem;
+            line-height: 1.7;
+            font-family: inherit;
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-sizing: border-box;
+            background-color: #fafafa;
+            color: #222;
+            transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
             
-            /* Absolute box killers */
-            border: none !important;
-            border-width: 0 !important;
-            border-radius: 0 !important;
-            outline: none !important;
-            box-shadow: none !important;
-            resize: none !important;
-            
-            overflow-y: hidden !important; /* Disables internal scrolling entirely */
-            min-height: 200px;
-            background-color: transparent !important;
-            color: #222 !important;
+            /* Allows free dragging horizontally and vertically */
+            resize: both !important; 
+            overflow: auto !important; 
         }
-        
-        /* Disables any glowing lines or boxes when clicking inside to type */
-        .permanent-notes-input:focus, 
-        .permanent-notes-input:active, 
-        .permanent-notes-input:hover {
-            border: none !important;
-            outline: none !important;
-            box-shadow: none !important;
-            background-color: transparent !important;
+        .permanent-notes-input:focus {
+            outline: none;
+            border-color: #0070f3;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.1);
         }
-
         .saving-status {
             font-size: 0.85rem;
             color: #666;
-            margin-top: 15px;
+            margin-top: 8px;
             text-align: right;
             min-height: 20px;
             font-style: italic;
@@ -168,7 +163,7 @@
                 <div id="viewTime" class="time-box"></div>
                 
                 <div class="notes-heading-area">My Notes & Thoughts:</div>
-                <textarea id="liveNotesInput" class="permanent-notes-input" placeholder="Start typing your review directly on the page..."></textarea>
+                <textarea id="liveNotesInput" class="permanent-notes-input" placeholder="Type your thoughts and notes directly here... Everything is saved automatically!"></textarea>
                 <div id="saveStatus" class="saving-status"></div>
             </div>
         </article>
@@ -258,11 +253,6 @@
             }
         };
 
-        function adjustHeight(el) {
-            el.style.height = 'auto';
-            el.style.height = el.scrollHeight + 'px';
-        }
-
         function showDisplayView() {
             const review = reviews.find(r => r.id === currentId);
             if (!review) {
@@ -281,13 +271,19 @@
             const notesInput = document.getElementById('liveNotesInput');
             notesInput.value = review.notes || "";
             
-            // Adjust on load
-            setTimeout(() => { adjustHeight(notesInput); }, 100);
+            // Load saved custom sizes if they exist
+            const savedWidth = localStorage.getItem('review_box_width');
+            const savedHeight = localStorage.getItem('review_box_height');
+            if (savedWidth) notesInput.style.width = savedWidth;
+            if (savedHeight) notesInput.style.height = savedHeight;
             
-            notesInput.addEventListener('input', function() {
-                adjustHeight(this);
-                autoSaveNotes();
+            // Save size instantly when the user finishes dragging/resizing
+            notesInput.addEventListener('mouseup', function() {
+                localStorage.setItem('review_box_width', this.style.width);
+                localStorage.setItem('review_box_height', this.style.height);
             });
+
+            notesInput.addEventListener('input', autoSaveNotes);
             
             document.title = `${review.title} - Book Review`;
 
