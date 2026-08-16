@@ -29,6 +29,20 @@
         .back-btn:hover {
             text-decoration: underline;
         }
+        .edit-btn {
+            background-color: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: background-color 0.2s;
+        }
+        .edit-btn:hover {
+            background-color: #e5e7eb;
+        }
         
         /* Master Layout Container for the entire review card */
         .review-main-container {
@@ -162,6 +176,8 @@
 
     <div class="header-nav">
         <a href="index.html" class="back-btn">← Back to All Reviews</a>
+        <!-- Edit Button added here -->
+        <button id="editBtn" class="edit-btn" onclick="openEditForm()" style="display:none;">✏️ Edit Book</button>
     </div>
 
     <!-- VIEW DISPLAY -->
@@ -193,10 +209,10 @@
         </div>
     </main>
 
-    <!-- CREATION FORM -->
+    <!-- CREATION / EDIT FORM -->
     <main id="form-section" style="display:none;">
         <div class="form-container">
-            <h2>Add New Book Review</h2>
+            <h2 id="formTitle">Add New Book Review</h2>
             <form id="reviewForm" onsubmit="handleFormSubmit(event)">
                 <div class="form-group">
                     <label for="bookTitle">Book Name</label>
@@ -241,14 +257,14 @@
                     <label for="bookCoverInput">Upload Book Photo Cover</label>
                     <div class="image-preview-container">
                         <input type="file" id="bookCoverInput" accept="image/*" onchange="previewImage(this)">
-                        <img id="formImagePreview" class="preview-img-element" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='120'><rect width='100%'' height='100%' fill='%23f8fafc'/></svg>" alt="Preview">
+                        <img id="formImagePreview" class="preview-img-element" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='120'><rect width='100%' height='100%' fill='%23f8fafc'/></svg>" alt="Preview">
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="bookReviewText">Detailed Review / Notes</label>
                     <textarea id="bookReviewText" rows="6" placeholder="Write your initial thoughts..."></textarea>
                 </div>
-                <button type="submit" class="action-btn" style="width: 100%; padding: 12px; justify-content: center;">Save Review Details</button>
+                <button type="submit" id="submitBtn" class="action-btn" style="width: 100%; padding: 12px; justify-content: center;">Save Review Details</button>
             </form>
         </div>
     </main>
@@ -271,6 +287,7 @@
             if (idParam === 'new') {
                 currentId = 'new';
                 document.getElementById('form-section').style.display = 'block';
+                document.getElementById('editBtn').style.display = 'none';
             } else {
                 currentId = parseInt(idParam);
                 showDisplayView();
@@ -286,6 +303,7 @@
 
             document.getElementById('form-section').style.display = 'none';
             document.getElementById('view-section').style.display = 'block';
+            document.getElementById('editBtn').style.display = 'inline-block';
 
             document.getElementById('viewType').innerText = review.type;
             document.getElementById('viewTitle').innerText = review.title;
@@ -322,6 +340,35 @@
             document.getElementById('viewCover').src = review.cover ? review.cover : defaultSvg;
         }
 
+        function openEditForm() {
+            const review = reviews.find(r => r.id === currentId);
+            if (!review) return;
+
+            // Populate form fields with existing data
+            document.getElementById('bookTitle').value = review.title;
+            document.getElementById('bookAuthor').value = review.author;
+            document.getElementById('bookType').value = review.type;
+            document.getElementById('bookRating').value = review.rating;
+            document.getElementById('pageNumber').value = review.pages;
+            document.getElementById('startDate').value = review.start;
+            document.getElementById('finishDate').value = review.finish;
+            document.getElementById('bookReviewText').value = review.notes || "";
+            
+            base64CoverString = review.cover || "";
+            if (base64CoverString) {
+                document.getElementById('formImagePreview').src = base64CoverString;
+            }
+
+            // Update Header and Button labels
+            document.getElementById('formTitle').innerText = "Edit Book Review";
+            document.getElementById('submitBtn').innerText = "Update Review Details";
+
+            // Switch view modes
+            document.getElementById('view-section').style.display = 'none';
+            document.getElementById('form-section').style.display = 'block';
+            document.getElementById('editBtn').style.display = 'none';
+        }
+
         function autoSaveNotes() {
             const statusDiv = document.getElementById('saveStatus');
             statusDiv.innerText = "Typing...";
@@ -356,23 +403,44 @@
 
         function handleFormSubmit(event) {
             event.preventDefault();
-            const targetId = Date.now();
-            const reviewObject = {
-                id: targetId,
-                title: document.getElementById('bookTitle').value,
-                author: document.getElementById('bookAuthor').value,
-                type: document.getElementById('bookType').value,
-                rating: parseInt(document.getElementById('bookRating').value),
-                pages: document.getElementById('pageNumber').value,
-                start: document.getElementById('startDate').value,
-                finish: document.getElementById('finishDate').value,
-                notes: document.getElementById('bookReviewText').value,
-                cover: base64CoverString
-            };
 
-            reviews.push(reviewObject);
-            localStorage.setItem('my_book_reviews', JSON.stringify(reviews));
-            window.location.href = `review.html?id=${targetId}`;
+            if (currentId === 'new') {
+                // Creating a new review
+                const targetId = Date.now();
+                const reviewObject = {
+                    id: targetId,
+                    title: document.getElementById('bookTitle').value,
+                    author: document.getElementById('bookAuthor').value,
+                    type: document.getElementById('bookType').value,
+                    rating: parseInt(document.getElementById('bookRating').value),
+                    pages: document.getElementById('pageNumber').value,
+                    start: document.getElementById('startDate').value,
+                    finish: document.getElementById('finishDate').value,
+                    notes: document.getElementById('bookReviewText').value,
+                    cover: base64CoverString
+                };
+
+                reviews.push(reviewObject);
+                localStorage.setItem('my_book_reviews', JSON.stringify(reviews));
+                window.location.href = `review.html?id=${targetId}`;
+            } else {
+                // Updating an existing review
+                const idx = reviews.findIndex(r => r.id === currentId);
+                if (idx !== -1) {
+                    reviews[idx].title = document.getElementById('bookTitle').value;
+                    reviews[idx].author = document.getElementById('bookAuthor').value;
+                    reviews[idx].type = document.getElementById('bookType').value;
+                    reviews[idx].rating = parseInt(document.getElementById('bookRating').value);
+                    reviews[idx].pages = document.getElementById('pageNumber').value;
+                    reviews[idx].start = document.getElementById('startDate').value;
+                    reviews[idx].finish = document.getElementById('finishDate').value;
+                    reviews[idx].notes = document.getElementById('bookReviewText').value;
+                    reviews[idx].cover = base64CoverString;
+
+                    localStorage.setItem('my_book_reviews', JSON.stringify(reviews));
+                }
+                showDisplayView();
+            }
         }
     </script>
 </body>
