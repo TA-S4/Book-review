@@ -105,22 +105,12 @@
     <main id="reviews-list"></main>
 
     <script>
-        const ADMIN_PASSWORD = "mySecretPassword123"; // CHANGE THIS TO YOUR DESIRED PASSWORD!
+        const ADMIN_PASSWORD = "mySecretPassword123"; // CHANGE THIS to your secret admin password
         let reviews = [];
 
         window.onload = function() {
             checkAdminStatus();
-            
-            fetch('books.json')
-                .then(response => response.json())
-                .then(data => {
-                    reviews = data;
-                    renderReviews();
-                })
-                .catch(err => {
-                    console.error('Error fetching books.json:', err);
-                    document.getElementById('reviews-list').innerHTML = `<p style="text-align:center; color:#666; margin-top:40px;">No reviews found or error loading books.json.</p>`;
-                });
+            loadReviews();
         };
 
         function checkAdminStatus() {
@@ -146,12 +136,26 @@
             checkAdminStatus();
         }
 
+        function loadReviews() {
+            // Fetch reviews from books.json with cache busting to always see fresh updates
+            fetch('books.json?t=' + Date.now())
+                .then(response => response.json())
+                .then(data => {
+                    reviews = data;
+                    renderReviews();
+                })
+                .catch(err => {
+                    console.error('Error loading books.json:', err);
+                    document.getElementById('reviews-list').innerHTML = `<p style="text-align:center; color:#666; margin-top:40px;">No reviews found or books.json is missing.</p>`;
+                });
+        }
+
         function renderReviews() {
             const list = document.getElementById('reviews-list');
             list.innerHTML = "";
 
             if (reviews.length === 0) {
-                list.innerHTML = `<p style="text-align:center; color:#666; margin-top:40px;">No reviews yet.</p>`;
+                list.innerHTML = `<p style="text-align:center; color:#666; margin-top:40px;">No reviews found yet.</p>`;
                 return;
             }
 
@@ -179,7 +183,7 @@
                         </div>
                     </article>
                 `;
-                list.insertAdjacentHTML('afterbegin', cardHTML);
+                list.insertAdjacentHTML('beforeend', cardHTML);
             });
         }
 
