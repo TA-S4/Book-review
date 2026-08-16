@@ -18,6 +18,18 @@
             text-align: center;
             padding: 30px 0;
             border-bottom: 2px solid #eaeaea;
+            position: relative;
+        }
+        .admin-lock-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: 1px solid #ccc;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
         }
         .add-btn {
             background-color: #0070f3;
@@ -28,20 +40,16 @@
             border-radius: 6px;
             cursor: pointer;
             margin-top: 15px;
-            transition: background 0.2s;
             text-decoration: none;
             display: inline-block;
         }
-        .add-btn:hover {
-            background-color: #0051a2;
-        }
+        .add-btn:hover { background-color: #0051a2; }
         .review-card {
             background: white;
             padding: 25px;
             margin: 20px 0;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            position: relative;
             cursor: pointer;
             display: flex;
             gap: 20px;
@@ -59,9 +67,7 @@
             background-color: #e2e8f0;
             flex-shrink: 0;
         }
-        .card-content {
-            flex-grow: 1;
-        }
+        .card-content { flex-grow: 1; }
         .book-type-tag {
             display: inline-block;
             background: #e2e8f0;
@@ -73,18 +79,9 @@
             text-transform: uppercase;
             margin-bottom: 8px;
         }
-        .review-card h2 {
-            margin: 0 0 5px 0;
-        }
-        .book-meta {
-            color: #666;
-            font-size: 0.95rem;
-            margin-bottom: 10px;
-        }
-        .rating {
-            color: #ffb400;
-            font-weight: bold;
-        }
+        .review-card h2 { margin: 0 0 5px 0; }
+        .book-meta { color: #666; font-size: 0.95rem; margin-bottom: 10px; }
+        .rating { color: #ffb400; font-weight: bold; }
         .reading-time {
             display: inline-block;
             background: #eef6ff;
@@ -94,51 +91,67 @@
             font-size: 0.85rem;
             font-weight: 600;
         }
-        .delete-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: none;
-            border: none;
-            color: #e53935;
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 5px;
-            border-radius: 4px;
-            z-index: 10;
-        }
-        .delete-btn:hover {
-            background-color: #ffebee;
-        }
     </style>
 </head>
 <body>
 
     <header>
+        <button id="adminBtn" class="admin-lock-btn" onclick="toggleAdmin()">🔒 Admin Login</button>
         <h1>My Book Review Space</h1>
         <p>A collection of my thoughts and notes on books.</p>
-        <a href="review.html?id=new" class="add-btn">+ Add New Review</a>
+        <a href="review.html?id=new" id="addBookBtn" class="add-btn" style="display: none;">+ Add New Review</a>
     </header>
 
     <main id="reviews-list"></main>
 
     <script>
+        const ADMIN_PASSWORD = "mySecretPassword123"; // CHANGE THIS TO YOUR DESIRED PASSWORD!
         let reviews = [];
 
         window.onload = function() {
-            const savedData = localStorage.getItem('my_book_reviews');
-            if (savedData) {
-                reviews = JSON.parse(savedData);
-            }
-            renderReviews();
+            checkAdminStatus();
+            
+            fetch('books.json')
+                .then(response => response.json())
+                .then(data => {
+                    reviews = data;
+                    renderReviews();
+                })
+                .catch(err => {
+                    console.error('Error fetching books.json:', err);
+                    document.getElementById('reviews-list').innerHTML = `<p style="text-align:center; color:#666; margin-top:40px;">No reviews found or error loading books.json.</p>`;
+                });
         };
+
+        function checkAdminStatus() {
+            const isAdmin = localStorage.getItem('is_admin') === 'true';
+            document.getElementById('addBookBtn').style.display = isAdmin ? 'inline-block' : 'none';
+            document.getElementById('adminBtn').innerText = isAdmin ? '🔓 Logout Admin' : '🔒 Admin Login';
+        }
+
+        function toggleAdmin() {
+            const isAdmin = localStorage.getItem('is_admin') === 'true';
+            if (isAdmin) {
+                localStorage.removeItem('is_admin');
+                alert("Logged out of Admin mode.");
+            } else {
+                const input = prompt("Enter Admin Password:");
+                if (input === ADMIN_PASSWORD) {
+                    localStorage.setItem('is_admin', 'true');
+                    alert("Admin access granted!");
+                } else if (input !== null) {
+                    alert("Incorrect password!");
+                }
+            }
+            checkAdminStatus();
+        }
 
         function renderReviews() {
             const list = document.getElementById('reviews-list');
             list.innerHTML = "";
 
             if (reviews.length === 0) {
-                list.innerHTML = `<p style="text-align:center; color:#666; margin-top:40px;">No reviews yet. Click '+ Add New Review' to write your first one!</p>`;
+                list.innerHTML = `<p style="text-align:center; color:#666; margin-top:40px;">No reviews yet.</p>`;
                 return;
             }
 
@@ -149,7 +162,6 @@
 
                 let durationText = daysDiff === 0 ? "Read in 1 day" : `Read in ${daysDiff} days`;
                 const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
-                
                 const coverSrc = review.cover ? review.cover : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="70" height="105" viewBox="0 0 70 105"><rect width="100%" height="100%" fill="%23cbd5e1"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="12" fill="%2364748b">No Cover</text></svg>';
 
                 const cardHTML = `
@@ -165,7 +177,6 @@
                             </div>
                             <div class="reading-time">⏱️ ${durationText}</div>
                         </div>
-                        <button class="delete-btn" onclick="deleteCard(event, ${review.id})">🗑️</button>
                     </article>
                 `;
                 list.insertAdjacentHTML('afterbegin', cardHTML);
@@ -175,15 +186,6 @@
         function goToReview(id) {
             window.location.href = `review.html?id=${id}`;
         }
-
-        function deleteCard(event, id) {
-            event.stopPropagation();
-            if(confirm("Are you sure you want to delete this review?")) {
-                reviews = reviews.filter(r => r.id !== id);
-                localStorage.setItem('my_book_reviews', JSON.stringify(reviews));
-                renderReviews();
-            }
-        }
     </script>
-</body> <!-- trigger deploy -->
+</body>
 </html>
