@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Review Details</title>
-    <!-- Perfect Alignment - Full Width Left to Right Update -->
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -44,10 +43,9 @@
             background-color: #e5e7eb;
         }
         
-        /* Master Layout Container for the entire review card */
         .review-main-container {
             background: white;
-            padding: 35px; /* Unified padding for everything */
+            padding: 35px;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             display: flex;
@@ -55,7 +53,6 @@
             gap: 25px;
         }
 
-        /* Top Section: Cover on the left, info on the right */
         .detail-card-top {
             display: flex;
             gap: 30px;
@@ -107,7 +104,6 @@
             align-self: flex-start;
         }
 
-        /* Bottom Section: Spans perfectly from the far left of the card */
         .notes-section-container {
             display: flex;
             flex-direction: column;
@@ -120,7 +116,6 @@
             color: #222;
         }
         
-        /* The input text area spanning the total container width */
         .permanent-notes-input {
             width: 100%;
             min-height: 300px;
@@ -134,7 +129,6 @@
             background-color: #fafafa;
             color: #222;
             transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
-            
             resize: both !important; 
             overflow: auto !important; 
         }
@@ -176,15 +170,12 @@
 
     <div class="header-nav">
         <a href="index.html" class="back-btn">← Back to All Reviews</a>
-        <!-- Edit Button added here -->
         <button id="editBtn" class="edit-btn" onclick="openEditForm()" style="display:none;">✏️ Edit Book</button>
     </div>
 
     <!-- VIEW DISPLAY -->
     <main id="view-section" style="display:none;">
         <div class="review-main-container">
-            
-            <!-- Top Part: Info & Cover aligned -->
             <article class="detail-card-top">
                 <img id="viewCover" class="display-cover" src="" alt="Book Cover">
                 <div class="display-info">
@@ -199,13 +190,11 @@
                 </div>
             </article>
 
-            <!-- Bottom Part: Spans completely to the left wall under the image -->
             <section class="notes-section-container">
                 <div class="notes-heading-area">My Notes & Thoughts:</div>
                 <textarea id="liveNotesInput" class="permanent-notes-input" placeholder="Type your thoughts and notes directly here... Everything is saved automatically!"></textarea>
                 <div id="saveStatus" class="saving-status"></div>
             </section>
-            
         </div>
     </main>
 
@@ -287,6 +276,7 @@
             if (idParam === 'new') {
                 currentId = 'new';
                 document.getElementById('form-section').style.display = 'block';
+                document.getElementById('view-section').style.display = 'none';
                 document.getElementById('editBtn').style.display = 'none';
             } else {
                 currentId = parseInt(idParam);
@@ -305,36 +295,26 @@
             document.getElementById('view-section').style.display = 'block';
             document.getElementById('editBtn').style.display = 'inline-block';
 
-            document.getElementById('viewType').innerText = review.type;
-            document.getElementById('viewTitle').innerText = review.title;
-            document.getElementById('viewAuthor').innerText = review.author;
-            document.getElementById('viewPages').innerText = review.pages;
+            document.getElementById('viewType').innerText = review.type || '';
+            document.getElementById('viewTitle').innerText = review.title || '';
+            document.getElementById('viewAuthor').innerText = review.author || '';
+            document.getElementById('viewPages').innerText = review.pages || '';
             
             const notesInput = document.getElementById('liveNotesInput');
             notesInput.value = review.notes || "";
             
-            // Reapply user custom sizes from localStorage
-            const savedWidth = localStorage.getItem('review_box_width');
-            const savedHeight = localStorage.getItem('review_box_height');
-            if (savedWidth) notesInput.style.width = savedWidth;
-            if (savedHeight) notesInput.style.height = savedHeight;
-            
-            // Listen for mouseup resize adjustments and save locally
-            notesInput.addEventListener('mouseup', function() {
-                localStorage.setItem('review_box_width', this.style.width);
-                localStorage.setItem('review_box_height', this.style.height);
-            });
-
             notesInput.addEventListener('input', autoSaveNotes);
-            
             document.title = `${review.title} - Book Review`;
 
-            const start = new Date(review.start);
-            const finish = new Date(review.finish);
-            const daysDiff = Math.ceil((finish - start) / (1000 * 3600 * 24));
-            document.getElementById('viewTime').innerText = `⏱️ ${daysDiff === 0 ? "Read in 1 day" : `Read in ${daysDiff} days`} (${review.start} – ${review.finish})`;
+            if (review.start && review.finish) {
+                const start = new Date(review.start);
+                const finish = new Date(review.finish);
+                const daysDiff = Math.ceil((finish - start) / (1000 * 3600 * 24));
+                document.getElementById('viewTime').innerText = `⏱️ ${daysDiff === 0 ? "Read in 1 day" : `Read in ${daysDiff} days`} (${review.start} – ${review.finish})`;
+            }
 
-            document.getElementById('viewRating').innerText = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating) + ` (${review.rating}/5)`;
+            const rating = review.rating || 0;
+            document.getElementById('viewRating').innerText = '★'.repeat(rating) + '☆'.repeat(5 - rating) + ` (${rating}/5)`;
             
             const defaultSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="240"><rect width="100%" height="100%" fill="%23cbd5e1"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" fill="%2364748b">No Image</text></svg>';
             document.getElementById('viewCover').src = review.cover ? review.cover : defaultSvg;
@@ -344,26 +324,23 @@
             const review = reviews.find(r => r.id === currentId);
             if (!review) return;
 
-            // Populate form fields with existing data
-            document.getElementById('bookTitle').value = review.title;
-            document.getElementById('bookAuthor').value = review.author;
-            document.getElementById('bookType').value = review.type;
-            document.getElementById('bookRating').value = review.rating;
-            document.getElementById('pageNumber').value = review.pages;
-            document.getElementById('startDate').value = review.start;
-            document.getElementById('finishDate').value = review.finish;
-            document.getElementById('bookReviewText').value = review.notes || "";
+            document.getElementById('bookTitle').value = review.title || '';
+            document.getElementById('bookAuthor').value = review.author || '';
+            document.getElementById('bookType').value = review.type || 'Non-Fiction';
+            document.getElementById('bookRating').value = review.rating || 5;
+            document.getElementById('pageNumber').value = review.pages || '';
+            document.getElementById('startDate').value = review.start || '';
+            document.getElementById('finishDate').value = review.finish || '';
+            document.getElementById('bookReviewText').value = review.notes || '';
             
             base64CoverString = review.cover || "";
             if (base64CoverString) {
                 document.getElementById('formImagePreview').src = base64CoverString;
             }
 
-            // Update Header and Button labels
             document.getElementById('formTitle').innerText = "Edit Book Review";
             document.getElementById('submitBtn').innerText = "Update Review Details";
 
-            // Switch view modes
             document.getElementById('view-section').style.display = 'none';
             document.getElementById('form-section').style.display = 'block';
             document.getElementById('editBtn').style.display = 'none';
@@ -405,7 +382,6 @@
             event.preventDefault();
 
             if (currentId === 'new') {
-                // Creating a new review
                 const targetId = Date.now();
                 const reviewObject = {
                     id: targetId,
@@ -424,7 +400,6 @@
                 localStorage.setItem('my_book_reviews', JSON.stringify(reviews));
                 window.location.href = `review.html?id=${targetId}`;
             } else {
-                // Updating an existing review
                 const idx = reviews.findIndex(r => r.id === currentId);
                 if (idx !== -1) {
                     reviews[idx].title = document.getElementById('bookTitle').value;
