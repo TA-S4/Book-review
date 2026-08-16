@@ -145,16 +145,21 @@
                     <label for="bookReviewText">Detailed Review / Notes</label>
                     <textarea id="bookReviewText" rows="6"></textarea>
                 </div>
-                <button type="submit" id="submitBtn" class="action-btn">Save & Generate JSON Code</button>
+                <button type="submit" id="submitBtn" class="action-btn">Save Directly to GitHub</button>
             </form>
         </div>
     </main>
 
     <script>
+        // CONFIGURATION - GITHUB DETAILS:
+        const GITHUB_USERNAME = "ta-s4";          
+        const GITHUB_REPO = "Book-review";        
+
         let currentId = null;
         let reviews = [];
         let base64CoverString = "";
         let isAdmin = false;
+        let fileSha = ""; 
 
         window.onload = function() {
             isAdmin = localStorage.getItem('is_admin') === 'true';
@@ -162,14 +167,16 @@
             const urlParams = new URLSearchParams(window.location.search);
             const idParam = urlParams.get('id');
 
-            fetch('books.json')
+            // Fetch books.json directly via GitHub API to get SHA and contents
+            fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/books.json?t=` + Date.now())
                 .then(res => res.json())
                 .then(data => {
-                    reviews = data;
+                    fileSha = data.sha;
+                    reviews = JSON.parse(decodeURIComponent(escape(atob(data.content)))); // Decode Base64 UTF-8
 
                     if (idParam === 'new') {
                         if (!isAdmin) {
-                            alert("Admin access required to add reviews.");
+                            alert("Admin access required.");
                             window.location.href = 'index.html';
                             return;
                         }
@@ -179,6 +186,9 @@
                         currentId = parseInt(idParam);
                         showDisplayView();
                     }
+                })
+                .catch(err => {
+                    console.error("Error fetching books.json:", err);
                 });
         };
 
@@ -247,8 +257,19 @@
             }
         }
 
-        function handleFormSubmit(event) {
+        async function handleFormSubmit(event) {
             event.preventDefault();
+
+            let ghToken = localStorage.getItem('gh_token');
+            if (!ghToken) {
+                ghToken = prompt("Enter your GitHub Personal Access Token:");
+                if (!ghToken) return;
+                localStorage.setItem('gh_token', ghToken);
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Committing directly to GitHub...";
 
             const reviewObject = {
                 id: currentId === 'new' ? Date.now() : currentId,
@@ -270,9 +291,38 @@
                 if (idx !== -1) reviews[idx] = reviewObject;
             }
 
-            const jsonOutput = JSON.stringify(reviews, null, 2);
-            prompt("Copy this JSON code and paste it into your 'books.json' file on GitHub:", jsonOutput);
-            window.location.href = 'index.html';
+            const updatedJsonString = JSON.stringify(reviews, null, 2);
+            const encodedContent = btoa(unescape(encodeURIComponent(updatedJsonString)));
+
+            try {
+                const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/books.json`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${ghToken}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: `Update book review: ${reviewObject.title}`,
+                        content: encodedContent,
+                        sha: fileSha
+                    })
+                });
+
+                if (response.ok) {
+                    alert("✓ Saved successfully! Committed straight to GitHub.");
+                    window.location.href = 'index.html';
+                } else {
+                    const errData = await response.json();
+                    alert("GitHub Error: " + errData.message + "\nCheck if your token is valid.");
+                    localStorage.removeItem('gh_token'); 
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "Save Directly to GitHub";
+                }
+            } catch (err) {
+                alert("Network error saving to GitHub: " + err.message);
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Save Directly to GitHub";
+            }
         }
     </script>
 </body>
