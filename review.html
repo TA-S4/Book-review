@@ -20,139 +20,33 @@
             align-items: center;
             margin-bottom: 20px;
         }
-        .back-btn {
-            color: #0070f3;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .back-btn:hover {
-            text-decoration: underline;
-        }
+        .back-btn { color: #0070f3; text-decoration: none; font-weight: 600; }
         .edit-btn {
-            background-color: #f3f4f6;
-            color: #374151;
-            border: 1px solid #d1d5db;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: background-color 0.2s;
+            background-color: #f3f4f6; color: #374151; border: 1px solid #d1d5db;
+            padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600;
         }
-        .edit-btn:hover {
-            background-color: #e5e7eb;
-        }
-        
         .review-main-container {
-            background: white;
-            padding: 35px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
+            background: white; padding: 35px; border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 25px;
         }
-
-        .detail-card-top {
-            display: flex;
-            gap: 30px;
-            border-bottom: 1px solid #f0f0f0;
-            padding-bottom: 25px;
-        }
-        .display-cover {
-            width: 160px;
-            height: 240px;
-            object-fit: cover;
-            border-radius: 6px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            background: #e2e8f0;
-            flex-shrink: 0;
-        }
-        .display-info {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
+        .detail-card-top { display: flex; gap: 30px; border-bottom: 1px solid #f0f0f0; padding-bottom: 25px; }
+        .display-cover { width: 160px; height: 240px; object-fit: cover; border-radius: 6px; background: #e2e8f0; }
+        .display-info { flex-grow: 1; display: flex; flex-direction: column; }
         .book-type-tag {
-            display: inline-block;
-            background: #e2e8f0;
-            color: #475569;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 15px;
-            align-self: flex-start;
+            display: inline-block; background: #e2e8f0; color: #475569; padding: 4px 10px;
+            border-radius: 4px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; margin-bottom: 15px; align-self: flex-start;
         }
         h1 { margin-top: 0; font-size: 2.2rem; }
-        .meta-info {
-            color: #666;
-            font-size: 1.05rem;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 15px;
-            margin-bottom: 25px;
-        }
+        .meta-info { color: #666; font-size: 1.05rem; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 25px; }
         .rating { color: #ffb400; font-weight: bold; }
-        .time-box {
-            background: #eef6ff;
-            color: #0070f3;
-            padding: 10px 15px;
-            border-radius: 6px;
-            font-weight: 600;
-            display: inline-block;
-            align-self: flex-start;
-        }
-
-        .notes-section-container {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-        }
-        .notes-heading-area {
-            font-size: 1.4rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #222;
-        }
-        
+        .time-box { background: #eef6ff; color: #0070f3; padding: 10px 15px; border-radius: 6px; font-weight: 600; align-self: flex-start; }
+        .notes-section-container { display: flex; flex-direction: column; width: 100%; }
+        .notes-heading-area { font-size: 1.4rem; font-weight: bold; margin-bottom: 15px; color: #222; }
         .permanent-notes-input {
-            width: 100%;
-            min-height: 300px;
-            font-size: 1.1rem;
-            line-height: 1.7;
-            font-family: inherit;
-            padding: 15px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            box-sizing: border-box;
-            background-color: #fafafa;
-            color: #222;
-            transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
-            resize: both !important; 
-            overflow: auto !important; 
+            width: 100%; min-height: 300px; font-size: 1.1rem; line-height: 1.7; font-family: inherit;
+            padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; background-color: #fafafa;
         }
-        .permanent-notes-input:focus {
-            outline: none;
-            border-color: #0070f3;
-            background-color: #ffffff;
-            box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.1);
-        }
-        .saving-status {
-            font-size: 0.85rem;
-            color: #666;
-            margin-top: 8px;
-            text-align: right;
-            min-height: 20px;
-            font-style: italic;
-        }
-
-        .form-container {
-            background: white;
-            padding: 35px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
+        .form-container { background: white; padding: 35px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }
         .form-group input, .form-group select, .form-group textarea {
@@ -161,9 +55,8 @@
         .date-row { display: flex; gap: 15px; }
         .date-row .form-group { flex: 1; }
         .image-preview-container { display: flex; align-items: center; gap: 20px; margin-top: 5px; }
-        .preview-img-element { width: 80px; height: 120px; object-fit: cover; border: 1px dashed #ccc; border-radius: 4px; background: #fdfdfd; }
-        .action-btn { background-color: #0070f3; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
-        .action-btn:hover { background-color: #0051a2; }
+        .preview-img-element { width: 80px; height: 120px; object-fit: cover; border: 1px dashed #ccc; border-radius: 4px; }
+        .action-btn { background-color: #0070f3; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: 600; width: 100%; }
     </style>
 </head>
 <body>
@@ -192,8 +85,7 @@
 
             <section class="notes-section-container">
                 <div class="notes-heading-area">My Notes & Thoughts:</div>
-                <textarea id="liveNotesInput" class="permanent-notes-input" placeholder="Type your thoughts and notes directly here... Everything is saved automatically!"></textarea>
-                <div id="saveStatus" class="saving-status"></div>
+                <textarea id="liveNotesInput" class="permanent-notes-input" readonly placeholder="No notes available."></textarea>
             </section>
         </div>
     </main>
@@ -246,14 +138,14 @@
                     <label for="bookCoverInput">Upload Book Photo Cover</label>
                     <div class="image-preview-container">
                         <input type="file" id="bookCoverInput" accept="image/*" onchange="previewImage(this)">
-                        <img id="formImagePreview" class="preview-img-element" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='120'><rect width='100%' height='100%' fill='%23f8fafc'/></svg>" alt="Preview">
+                        <img id="formImagePreview" class="preview-img-element" src="" alt="Preview">
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="bookReviewText">Detailed Review / Notes</label>
-                    <textarea id="bookReviewText" rows="6" placeholder="Write your initial thoughts..."></textarea>
+                    <textarea id="bookReviewText" rows="6"></textarea>
                 </div>
-                <button type="submit" id="submitBtn" class="action-btn" style="width: 100%; padding: 12px; justify-content: center;">Save Review Details</button>
+                <button type="submit" id="submitBtn" class="action-btn">Save & Generate JSON Code</button>
             </form>
         </div>
     </main>
@@ -261,27 +153,33 @@
     <script>
         let currentId = null;
         let reviews = [];
-        let base64CoverString = ""; 
-        let saveTimeout = null;
+        let base64CoverString = "";
+        let isAdmin = false;
 
         window.onload = function() {
+            isAdmin = localStorage.getItem('is_admin') === 'true';
+
             const urlParams = new URLSearchParams(window.location.search);
             const idParam = urlParams.get('id');
 
-            const savedData = localStorage.getItem('my_book_reviews');
-            if (savedData) {
-                reviews = JSON.parse(savedData);
-            }
+            fetch('books.json')
+                .then(res => res.json())
+                .then(data => {
+                    reviews = data;
 
-            if (idParam === 'new') {
-                currentId = 'new';
-                document.getElementById('form-section').style.display = 'block';
-                document.getElementById('view-section').style.display = 'none';
-                document.getElementById('editBtn').style.display = 'none';
-            } else {
-                currentId = parseInt(idParam);
-                showDisplayView();
-            }
+                    if (idParam === 'new') {
+                        if (!isAdmin) {
+                            alert("Admin access required to add reviews.");
+                            window.location.href = 'index.html';
+                            return;
+                        }
+                        currentId = 'new';
+                        document.getElementById('form-section').style.display = 'block';
+                    } else {
+                        currentId = parseInt(idParam);
+                        showDisplayView();
+                    }
+                });
         };
 
         function showDisplayView() {
@@ -293,18 +191,18 @@
 
             document.getElementById('form-section').style.display = 'none';
             document.getElementById('view-section').style.display = 'block';
-            document.getElementById('editBtn').style.display = 'inline-block';
+            if (isAdmin) {
+                document.getElementById('editBtn').style.display = 'inline-block';
+            }
 
             document.getElementById('viewType').innerText = review.type || '';
             document.getElementById('viewTitle').innerText = review.title || '';
             document.getElementById('viewAuthor').innerText = review.author || '';
             document.getElementById('viewPages').innerText = review.pages || '';
-            
-            const notesInput = document.getElementById('liveNotesInput');
-            notesInput.value = review.notes || "";
-            
-            notesInput.addEventListener('input', autoSaveNotes);
-            document.title = `${review.title} - Book Review`;
+            document.getElementById('liveNotesInput').value = review.notes || '';
+
+            const rating = review.rating || 0;
+            document.getElementById('viewRating').innerText = '★'.repeat(rating) + '☆'.repeat(5 - rating) + ` (${rating}/5)`;
 
             if (review.start && review.finish) {
                 const start = new Date(review.start);
@@ -313,9 +211,6 @@
                 document.getElementById('viewTime').innerText = `⏱️ ${daysDiff === 0 ? "Read in 1 day" : `Read in ${daysDiff} days`} (${review.start} – ${review.finish})`;
             }
 
-            const rating = review.rating || 0;
-            document.getElementById('viewRating').innerText = '★'.repeat(rating) + '☆'.repeat(5 - rating) + ` (${rating}/5)`;
-            
             const defaultSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="240"><rect width="100%" height="100%" fill="%23cbd5e1"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" fill="%2364748b">No Image</text></svg>';
             document.getElementById('viewCover').src = review.cover ? review.cover : defaultSvg;
         }
@@ -332,38 +227,12 @@
             document.getElementById('startDate').value = review.start || '';
             document.getElementById('finishDate').value = review.finish || '';
             document.getElementById('bookReviewText').value = review.notes || '';
-            
             base64CoverString = review.cover || "";
-            if (base64CoverString) {
-                document.getElementById('formImagePreview').src = base64CoverString;
-            }
 
             document.getElementById('formTitle').innerText = "Edit Book Review";
-            document.getElementById('submitBtn').innerText = "Update Review Details";
-
             document.getElementById('view-section').style.display = 'none';
             document.getElementById('form-section').style.display = 'block';
             document.getElementById('editBtn').style.display = 'none';
-        }
-
-        function autoSaveNotes() {
-            const statusDiv = document.getElementById('saveStatus');
-            statusDiv.innerText = "Typing...";
-            statusDiv.style.color = "#666";
-
-            clearTimeout(saveTimeout);
-
-            saveTimeout = setTimeout(() => {
-                const newNotesText = document.getElementById('liveNotesInput').value;
-                const idx = reviews.findIndex(r => r.id === currentId);
-                
-                if (idx !== -1) {
-                    reviews[idx].notes = newNotesText;
-                    localStorage.setItem('my_book_reviews', JSON.stringify(reviews));
-                    statusDiv.innerText = "✓ Saved automatically";
-                    statusDiv.style.color = "#2ea44f";
-                }
-            }, 700);
         }
 
         function previewImage(input) {
@@ -381,41 +250,29 @@
         function handleFormSubmit(event) {
             event.preventDefault();
 
-            if (currentId === 'new') {
-                const targetId = Date.now();
-                const reviewObject = {
-                    id: targetId,
-                    title: document.getElementById('bookTitle').value,
-                    author: document.getElementById('bookAuthor').value,
-                    type: document.getElementById('bookType').value,
-                    rating: parseInt(document.getElementById('bookRating').value),
-                    pages: document.getElementById('pageNumber').value,
-                    start: document.getElementById('startDate').value,
-                    finish: document.getElementById('finishDate').value,
-                    notes: document.getElementById('bookReviewText').value,
-                    cover: base64CoverString
-                };
+            const reviewObject = {
+                id: currentId === 'new' ? Date.now() : currentId,
+                title: document.getElementById('bookTitle').value,
+                author: document.getElementById('bookAuthor').value,
+                type: document.getElementById('bookType').value,
+                rating: parseInt(document.getElementById('bookRating').value),
+                pages: document.getElementById('pageNumber').value,
+                start: document.getElementById('startDate').value,
+                finish: document.getElementById('finishDate').value,
+                notes: document.getElementById('bookReviewText').value,
+                cover: base64CoverString
+            };
 
+            if (currentId === 'new') {
                 reviews.push(reviewObject);
-                localStorage.setItem('my_book_reviews', JSON.stringify(reviews));
-                window.location.href = `review.html?id=${targetId}`;
             } else {
                 const idx = reviews.findIndex(r => r.id === currentId);
-                if (idx !== -1) {
-                    reviews[idx].title = document.getElementById('bookTitle').value;
-                    reviews[idx].author = document.getElementById('bookAuthor').value;
-                    reviews[idx].type = document.getElementById('bookType').value;
-                    reviews[idx].rating = parseInt(document.getElementById('bookRating').value);
-                    reviews[idx].pages = document.getElementById('pageNumber').value;
-                    reviews[idx].start = document.getElementById('startDate').value;
-                    reviews[idx].finish = document.getElementById('finishDate').value;
-                    reviews[idx].notes = document.getElementById('bookReviewText').value;
-                    reviews[idx].cover = base64CoverString;
-
-                    localStorage.setItem('my_book_reviews', JSON.stringify(reviews));
-                }
-                showDisplayView();
+                if (idx !== -1) reviews[idx] = reviewObject;
             }
+
+            const jsonOutput = JSON.stringify(reviews, null, 2);
+            prompt("Copy this JSON code and paste it into your 'books.json' file on GitHub:", jsonOutput);
+            window.location.href = 'index.html';
         }
     </script>
 </body>
